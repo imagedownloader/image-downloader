@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- SEO -->
+  <title>Image Downloader — Bulk Download Images from Any Website</title>
+  <meta name="description" content="Free Chrome, Firefox & Edge extension to bulk download images from any webpage. Filter by size, format, and resolution. Download as ZIP. No signup needed.">
+  <meta name="keywords" content="image downloader, chrome extension, bulk image download, download images from website, firefox addon, edge extension, image saver, web scraper images">
+  <link rel="canonical" href="https://imagedownloader.org">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Image Downloader — Bulk Download Images from Any Website">
+  <meta property="og:description" content="Free Chrome, Firefox & Edge extension to bulk download images from any webpage. Filter by size & format. Download as ZIP.">
+  <meta property="og:url" content="https://imagedownloader.org">
+  <meta property="og:type" content="website">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Image Downloader Extension — Chrome, Firefox, Edge">
+  <meta name="twitter:description" content="Bulk download any images from any webpage. Free browser extension for Chrome, Firefox and Edge.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #080b14;
+      --bg-card: #0f1623;
+      --bg-card-hover: #161e2e;
+      --border: rgba(255,255,255,0.07);
+      --border-glow: rgba(108, 99, 255, 0.4);
+      --purple: #6C63FF;
+      --purple-light: #8b85ff;
+      --cyan: #22d3ee;
+      --text: #f0f4ff;
+      --text-muted: #8892a4;
+      --gradient: linear-gradient(135deg, #6C63FF 0%, #22d3ee 100%);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── Background orbs ── */
+    .bg-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.15;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .bg-orb-1 { width: 600px; height: 600px; background: #6C63FF; top: -200px; left: -200px; }
+    .bg-orb-2 { width: 500px; height: 500px; background: #22d3ee; bottom: -150px; right: -150px; }
+
+    /* ── Container ── */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(8, 11, 20, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--text);
+    }
+    .nav-logo-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--gradient);
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+    }
+    .nav-cta {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary {
+      background: var(--gradient);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(108, 99, 255, 0.4);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(108, 99, 255, 0.6);
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover {
+      background: var(--bg-card);
+      color: var(--text);
+      border-color: var(--border-glow);
+    }
+    .btn-store {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.25s ease;
+    }
+    .btn-chrome { background: #4285F4; color: #fff; box-shadow: 0 4px 20px rgba(66,133,244,0.35); }
+    .btn-chrome:hover { background: #3367D6; transform: translateY(-3px); box-shadow: 0 8px 30px rgba(66,133,244,0.5); }
+    .btn-firefox { background: #FF7139; color: #fff; box-shadow: 0 4px 20px rgba(255,113,57,0.35); }
+    .btn-firefox:hover { background: #e05e2b; transform: translateY(-3px); box-shadow: 0 8px 30px rgba(255,113,57,0.5); }
+    .btn-edge { background: #0078D7; color: #fff; box-shadow: 0 4px 20px rgba(0,120,215,0.35); }
+    .btn-edge:hover { background: #005fa1; transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,120,215,0.5); }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 100px 0 80px;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 16px;
+      border-radius: 100px;
+      border: 1px solid var(--border-glow);
+      background: rgba(108, 99, 255, 0.1);
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--purple-light);
+      margin-bottom: 28px;
+      animation: fadeInDown 0.6s ease;
+    }
+    .hero h1 {
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 24px;
+      letter-spacing: -0.02em;
+      animation: fadeInUp 0.6s ease 0.1s both;
+    }
+    .hero h1 .gradient-text {
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto 48px;
+      animation: fadeInUp 0.6s ease 0.2s both;
+    }
+    .hero-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: center;
+      margin-bottom: 64px;
+      animation: fadeInUp 0.6s ease 0.3s both;
+    }
+    .hero-preview {
+      position: relative;
+      max-width: 800px;
+      margin: 0 auto;
+      animation: fadeInUp 0.8s ease 0.4s both;
+    }
+    .hero-preview-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(108,99,255,0.1);
+    }
+    .preview-bar {
+      background: #0b1020;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .preview-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+    }
+    .preview-dot-red { background: #ff5f57; }
+    .preview-dot-yellow { background: #febc2e; }
+    .preview-dot-green { background: #28c840; }
+    .preview-body { padding: 28px; }
+    .preview-url-bar {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .preview-url-bar .url-text { color: var(--text); }
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .preview-img-card {
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      position: relative;
+      aspect-ratio: 4/3;
+      background: linear-gradient(135deg, #1a2035, #0f1623);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+    }
+    .preview-check {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      width: 20px;
+      height: 20px;
+      border-radius: 5px;
+      background: var(--purple);
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+    }
+    .preview-download-btn {
+      margin-top: 20px;
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      border: none;
+      background: var(--gradient);
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    /* ── STATS ── */
+    .stats {
+      padding: 60px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 900;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+
+    /* ── SECTION ── */
+    .section {
+      padding: 100px 0;
+    }
+    .section-label {
+      text-align: center;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--purple);
+      margin-bottom: 16px;
+    }
+    .section-title {
+      text-align: center;
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      font-weight: 800;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+    .section-subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      max-width: 560px;
+      margin: 0 auto 64px;
+      font-size: 1.05rem;
+    }
+
+    /* ── FEATURES ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      transition: all 0.3s ease;
+    }
+    .feature-card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-glow);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(108,99,255,0.1);
+    }
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(108,99,255,0.2), rgba(34,211,238,0.1));
+      border: 1px solid rgba(108,99,255,0.2);
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+    .feature-card h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .feature-card p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+
+    /* ── INSTALL ── */
+    .install-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .install-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 32px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    .install-card:hover {
+      border-color: var(--border-glow);
+      transform: translateY(-6px);
+    }
+    .install-browser-icon {
+      font-size: 52px;
+      margin-bottom: 20px;
+      display: block;
+    }
+    .install-card h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .install-card p {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      margin-bottom: 24px;
+    }
+
+    /* ── HOW IT WORKS ── */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+    }
+    .step {
+      text-align: center;
+      position: relative;
+    }
+    .step:not(:last-child)::after {
+      content: '→';
+      position: absolute;
+      right: -20px;
+      top: 30px;
+      font-size: 1.5rem;
+      color: var(--border-glow);
+    }
+    .step-num {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--gradient);
+      display: grid;
+      place-items: center;
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin: 0 auto 20px;
+      box-shadow: 0 8px 24px rgba(108,99,255,0.4);
+    }
+    .step h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .step p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* ── COMPARISON TABLE ── */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    th {
+      background: rgba(108,99,255,0.08);
+      padding: 18px 20px;
+      text-align: center;
+      font-weight: 700;
+      color: var(--text);
+      border-bottom: 1px solid var(--border);
+    }
+    th:first-child { text-align: left; }
+    td {
+      padding: 16px 20px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+    td:first-child {
+      text-align: left;
+      color: var(--text);
+      font-weight: 500;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    .check { color: #22d3ee; font-size: 1.1rem; }
+    .cross { color: #ff5f57; font-size: 1.1rem; }
+
+    /* ── CTA ── */
+    .cta-section {
+      padding: 100px 0;
+      text-align: center;
+    }
+    .cta-box {
+      background: linear-gradient(135deg, rgba(108,99,255,0.12), rgba(34,211,238,0.06));
+      border: 1px solid rgba(108,99,255,0.25);
+      border-radius: 24px;
+      padding: 80px 48px;
+    }
+    .cta-box h2 {
+      font-size: clamp(1.8rem, 3vw, 2.5rem);
+      font-weight: 900;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+    .cta-box p {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 540px;
+      margin: 0 auto 40px;
+    }
+    .cta-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: center;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 48px 0;
+      text-align: center;
+    }
+    .footer-logo {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      justify-content: center;
+      margin: 20px 0;
+    }
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--text); }
+    .footer-copy {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .features-grid, .install-grid, .steps { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+      .step:not(:last-child)::after { display: none; }
+      .preview-grid { grid-template-columns: repeat(2, 1fr); }
+      .cta-box { padding: 48px 24px; }
+      .hero-buttons { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background orbs -->
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <a href="https://imagedownloader.org" class="nav-logo" id="nav-logo">
+        <div class="nav-logo-icon">🖼️</div>
+        imagedownloader.org
+      </a>
+      <div class="nav-cta">
+        <a href="https://imagedownloader.org" class="btn btn-ghost" id="nav-website-btn">🌐 Website</a>
+        <a href="https://chromewebstore.google.com/detail/image-downloader-imagemas/hmghdknfmhfbbdedplpdakfbhflfikhm" class="btn btn-primary" id="nav-install-btn" target="_blank" rel="noopener">
+          Install Free →
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge" id="hero-badge">⭐ Trusted by 100,000+ users on Chrome, Firefox & Edge</div>
+      <h1>Bulk Download Images<br>from <span class="gradient-text">Any Webpage</span></h1>
+      <p>The #1 free image downloader extension. Filter by size & format, preview before saving, and download everything as a ZIP — in seconds.</p>
+      <div class="hero-buttons">
+        <a href="https://chromewebstore.google.com/detail/image-downloader-imagemas/hmghdknfmhfbbdedplpdakfbhflfikhm" class="btn-store btn-chrome" id="hero-chrome-btn" target="_blank" rel="noopener">
+          🟦 Add to Chrome — Free
+        </a>
+        <a href="https://addons.mozilla.org/en-US/firefox/addon/bulk-image-download/" class="btn-store btn-firefox" id="hero-firefox-btn" target="_blank" rel="noopener">
+          🦊 Add to Firefox — Free
+        </a>
+        <a href="https://microsoftedge.microsoft.com/addons/detail/bulk-image-downloader-and/klankjlbkmmhpnldkckiaifbmnpafpfg" class="btn-store btn-edge" id="hero-edge-btn" target="_blank" rel="noopener">
+          🔷 Add to Edge — Free
+        </a>
+      </div>
+
+      <!-- UI Preview mock -->
+      <div class="hero-preview" id="hero-preview">
+        <div class="hero-preview-card">
+          <div class="preview-bar">
+            <div class="preview-dot preview-dot-red"></div>
+            <div class="preview-dot preview-dot-yellow"></div>
+            <div class="preview-dot preview-dot-green"></div>
+          </div>
+          <div class="preview-body">
+            <div class="preview-url-bar">
+              🔒 <span class="url-text">unsplash.com/photos</span>
+              &nbsp;— <span>23 images found</span>
+            </div>
+            <div class="preview-grid">
+              <div class="preview-img-card"><div class="preview-check">✓</div>🌄</div>
+              <div class="preview-img-card"><div class="preview-check">✓</div>🏙️</div>
+              <div class="preview-img-card"><div class="preview-check">✓</div>🌿</div>
+              <div class="preview-img-card"><div class="preview-check">✓</div>🐾</div>
+            </div>
+            <div class="preview-download-btn">⬇️ Download Selected as ZIP (4 images)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="container">
+      <div class="stats-grid">
+        <div id="stat-users">
+          <div class="stat-number">100K+</div>
+          <div class="stat-label">Active Users</div>
+        </div>
+        <div id="stat-stores">
+          <div class="stat-number">3</div>
+          <div class="stat-label">Browser Stores</div>
+        </div>
+        <div id="stat-rating">
+          <div class="stat-number">4.8★</div>
+          <div class="stat-label">Average Rating</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <section class="section" id="features">
+    <div class="container">
+      <p class="section-label">Features</p>
+      <h2 class="section-title">Everything You Need to Save Images</h2>
+      <p class="section-subtitle">A complete toolkit for designers, developers, and researchers who need images fast.</p>
+
+      <div class="features-grid">
+        <div class="feature-card" id="feature-scan">
+          <div class="feature-icon">🖼️</div>
+          <h3>One-Click Page Scan</h3>
+          <p>Instantly detects all images on the active tab — including lazy-loaded, background CSS, and srcset images.</p>
+        </div>
+        <div class="feature-card" id="feature-preview">
+          <div class="feature-icon">👁️</div>
+          <h3>Preview Before Download</h3>
+          <p>See full thumbnails of every image found. Pick exactly what you want before saving anything.</p>
+        </div>
+        <div class="feature-card" id="feature-filter">
+          <div class="feature-icon">📐</div>
+          <h3>Filter by Size & Resolution</h3>
+          <p>Set minimum width and height to automatically exclude tiny icons, spacers, and tracking pixels.</p>
+        </div>
+        <div class="feature-card" id="feature-format">
+          <div class="feature-icon">🗂️</div>
+          <h3>Filter by Format</h3>
+          <p>Show only JPG, PNG, WEBP, GIF, SVG, BMP, or ICO files. Mix and match format filters easily.</p>
+        </div>
+        <div class="feature-card" id="feature-zip">
+          <div class="feature-icon">📦</div>
+          <h3>Bulk ZIP Download</h3>
+          <p>Select multiple images and pack them into a single ZIP archive with one click. No limits.</p>
+        </div>
+        <div class="feature-card" id="feature-privacy">
+          <div class="feature-icon">🔒</div>
+          <h3>100% Private</h3>
+          <p>All processing is done locally in your browser. No data, URLs, or images are ever sent to our servers.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how-it-works" style="padding-top: 0;">
+    <div class="container">
+      <p class="section-label">How It Works</p>
+      <h2 class="section-title">3 Simple Steps</h2>
+      <p class="section-subtitle">Download any images from any website in under 30 seconds.</p>
+
+      <div class="steps">
+        <div class="step" id="step-1">
+          <div class="step-num">1</div>
+          <h3>Open Any Page</h3>
+          <p>Navigate to any website in your browser and click the Image Downloader extension icon in your toolbar.</p>
+        </div>
+        <div class="step" id="step-2">
+          <div class="step-num">2</div>
+          <h3>Filter & Select</h3>
+          <p>Browse the image grid, apply size and format filters, and check the ones you want to keep.</p>
+        </div>
+        <div class="step" id="step-3">
+          <div class="step-num">3</div>
+          <h3>Download as ZIP</h3>
+          <p>Hit "Download ZIP" and all selected images are bundled and saved to your computer instantly.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSTALL -->
+  <section class="section" id="install" style="padding-top: 0;">
+    <div class="container">
+      <p class="section-label">Install</p>
+      <h2 class="section-title">Available on 3 Browsers</h2>
+      <p class="section-subtitle">Install once and use it on every website you visit — it's completely free.</p>
+
+      <div class="install-grid">
+        <div class="install-card" id="install-chrome">
+          <span class="install-browser-icon">🟦</span>
+          <h3>Google Chrome</h3>
+          <p>Install from the official Chrome Web Store. Works on Chrome, Brave, and all Chromium-based browsers.</p>
+          <a href="https://chromewebstore.google.com/detail/image-downloader-imagemas/hmghdknfmhfbbdedplpdakfbhflfikhm" class="btn-store btn-chrome" target="_blank" rel="noopener" id="install-chrome-btn">
+            Add to Chrome →
+          </a>
+        </div>
+        <div class="install-card" id="install-firefox">
+          <span class="install-browser-icon">🦊</span>
+          <h3>Mozilla Firefox</h3>
+          <p>Available on Mozilla Add-ons. Compatible with Firefox on Windows, Mac, and Linux.</p>
+          <a href="https://addons.mozilla.org/en-US/firefox/addon/bulk-image-download/" class="btn-store btn-firefox" target="_blank" rel="noopener" id="install-firefox-btn">
+            Add to Firefox →
+          </a>
+        </div>
+        <div class="install-card" id="install-edge">
+          <span class="install-browser-icon">🔷</span>
+          <h3>Microsoft Edge</h3>
+          <p>Available on Microsoft Edge Add-ons for all Windows 10/11 users. Easy one-click install.</p>
+          <a href="https://microsoftedge.microsoft.com/addons/detail/bulk-image-downloader-and/klankjlbkmmhpnldkckiaifbmnpafpfg" class="btn-store btn-edge" target="_blank" rel="noopener" id="install-edge-btn">
+            Add to Edge →
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPARISON -->
+  <section class="section" id="compare" style="padding-top: 0;">
+    <div class="container">
+      <p class="section-label">Comparison</p>
+      <h2 class="section-title">Online Tool vs Browser Extension</h2>
+      <p class="section-subtitle">Choose the right tool for your use case.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Online Tool (Free)</th>
+              <th>Extension (Free)</th>
+              <th>Extension (Pro)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Bulk download page images</td>
+              <td><span class="check">✓</span></td>
+              <td><span class="check">✓</span></td>
+              <td><span class="check">✓</span> Unlimited</td>
+            </tr>
+            <tr>
+              <td>Filter by dimensions & format</td>
+              <td><span class="check">✓</span></td>
+              <td><span class="check">✓</span></td>
+              <td><span class="check">✓</span></td>
+            </tr>
+            <tr>
+              <td>Works on login-protected pages</td>
+              <td><span class="cross">✗</span></td>
+              <td><span class="check">✓</span></td>
+              <td><span class="check">✓</span></td>
+            </tr>
+            <tr>
+              <td>Instagram / Pinterest / Amazon HD</td>
+              <td><span class="cross">✗</span></td>
+              <td><span class="cross">✗</span></td>
+              <td><span class="check">✓</span></td>
+            </tr>
+            <tr>
+              <td>Auto-scroll for lazy-loaded images</td>
+              <td><span class="cross">✗</span></td>
+              <td><span class="cross">✗</span></td>
+              <td><span class="check">✓</span></td>
+            </tr>
+            <tr>
+              <td>WebP → JPG converter</td>
+              <td><span class="cross">✗</span></td>
+              <td><span class="cross">✗</span></td>
+              <td><span class="check">✓</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section" id="cta">
+    <div class="container">
+      <div class="cta-box">
+        <h2>Ready to Stop Saving Images One by One?</h2>
+        <p>Join 100,000+ users who use Image Downloader to save hours of manual work every week.</p>
+        <div class="cta-buttons">
+          <a href="https://chromewebstore.google.com/detail/image-downloader-imagemas/hmghdknfmhfbbdedplpdakfbhflfikhm" class="btn-store btn-chrome" id="cta-chrome-btn" target="_blank" rel="noopener">
+            🟦 Add to Chrome — Free
+          </a>
+          <a href="https://imagedownloader.org" class="btn btn-ghost" id="cta-website-btn" target="_blank" rel="noopener">
+            Try Online Tool →
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer-logo">🖼️ imagedownloader.org</div>
+      <div class="footer-links">
+        <a href="https://imagedownloader.org" id="footer-home">Website</a>
+        <a href="https://chromewebstore.google.com/detail/image-downloader-imagemas/hmghdknfmhfbbdedplpdakfbhflfikhm" id="footer-chrome" target="_blank" rel="noopener">Chrome</a>
+        <a href="https://addons.mozilla.org/en-US/firefox/addon/bulk-image-download/" id="footer-firefox" target="_blank" rel="noopener">Firefox</a>
+        <a href="https://microsoftedge.microsoft.com/addons/detail/bulk-image-downloader-and/klankjlbkmmhpnldkckiaifbmnpafpfg" id="footer-edge" target="_blank" rel="noopener">Edge</a>
+        <a href="https://imagedownloader.org/privacy-policy" id="footer-privacy">Privacy Policy</a>
+        <a href="https://imagedownloader.org/pricing" id="footer-pricing">Pro Pricing</a>
+      </div>
+      <p class="footer-copy">© 2026 imagedownloader.org — All rights reserved. Built with privacy in mind. No trackers.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
+      });
+    });
+
+    // Intersection observer for fade-in animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.feature-card, .install-card, .step').forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(24px)';
+      el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+      observer.observe(el);
+    });
+  </script>
+
+</body>
+</html>
